@@ -1,51 +1,233 @@
-import React, { useState } from 'react';
+// Register.js
+import * as React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Form, Button, Card } from 'react-bootstrap';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import CssBaseline from '@mui/material/CssBaseline';
+import Divider from '@mui/material/Divider';
+import FormLabel from '@mui/material/FormLabel';
+import FormControl from '@mui/material/FormControl';
+import Link from '@mui/material/Link';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
+import Stack from '@mui/material/Stack';
+import MuiCard from '@mui/material/Card';
+import { styled } from '@mui/material/styles';
+import AppTheme from '../shared-theme/AppTheme'; // Adjust the path as necessary
+import ColorModeSelect from '../shared-theme/ColorModeSelect'; // Adjust the path as necessary
 import authService from '../../services/authService';  // Import your auth service
 
-function Register() {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+const Card = styled(MuiCard)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  alignSelf: 'center',
+  width: '100%',
+  padding: theme.spacing(4),
+  gap: theme.spacing(2),
+  margin: 'auto',
+  [theme.breakpoints.up('sm')]: {
+    maxWidth: '450px',
+  },
+  boxShadow:
+    'hsla(220, 30%, 5%, 0.05) 0px 5px 15px 0px, hsla(220, 25%, 10%, 0.05) 0px 15px 35px -5px',
+  ...theme.applyStyles('dark', {
+    boxShadow:
+      'hsla(220, 30%, 5%, 0.5) 0px 5px 15px 0px, hsla(220, 25%, 10%, 0.08) 0px 15px 35px -5px',
+  }),
+}));
+
+const RegisterContainer = styled(Stack)(({ theme }) => ({
+  height: 'calc((1 - var(--template-frame-height, 0)) * 100dvh)',
+  minHeight: '100%',
+  padding: theme.spacing(2),
+  [theme.breakpoints.up('sm')]: {
+    padding: theme.spacing(4),
+  },
+  '&::before': {
+    content: '""',
+    display: 'block',
+    position: 'absolute',
+    zIndex: -1,
+    inset: 0,
+    backgroundImage:
+      'radial-gradient(ellipse at 50% 50%, hsl(210, 100%, 97%), hsl(0, 0%, 100%))',
+    backgroundRepeat: 'no-repeat',
+    ...theme.applyStyles('dark', {
+      backgroundImage:
+        'radial-gradient(at 50% 50%, hsla(210, 100%, 16%, 0.5), hsl(220, 30%, 5%))',
+    }),
+  },
+}));
+
+export default function Register(props) {
+  const [nameError, setNameError] = React.useState(false);
+  const [nameErrorMessage, setNameErrorMessage] = React.useState('');
+  const [emailError, setEmailError] = React.useState(false);
+  const [emailErrorMessage, setEmailErrorMessage] = React.useState('');
+  const [passwordError, setPasswordError] = React.useState(false);
+  const [passwordErrorMessage, setPasswordErrorMessage] = React.useState('');
+  const [registrationError, setRegistrationError] = React.useState('');
+
   const navigate = useNavigate();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    if (!validateInputs()) {
+      return;
+    }
+
+    const data = new FormData(event.currentTarget);
+    const name = data.get('name');
+    const email = data.get('email');
+    const password = data.get('password');
+
     try {
-      await authService.register(name, email, password); // Use authService
-      navigate('/login'); // Redirect to login page
-    } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed.');
+      await authService.register(name, email, password);
+      navigate('/login'); // Redirect to login after successful registration
+    } catch (error) {
+      setRegistrationError(error.response?.data?.message || 'Registration failed.');
     }
   };
 
-  return (
-    <Card>
-      <Card.Body>
-        <Card.Title>Register</Card.Title>
-        {error && <div className="alert alert-danger">{error}</div>}
-        <Form onSubmit={handleSubmit}>
-            <Form.Group className="mb-3" controlId="formBasicName">
-              <Form.Label>Name</Form.Label>
-              <Form.Control type="text" placeholder="Enter name" value={name} onChange={(e) => setName(e.target.value)} />
-            </Form.Group>
-          <Form.Group className="mb-3" controlId="formBasicEmail">
-            <Form.Label>Email address</Form.Label>
-            <Form.Control type="email" placeholder="Enter email" value={email} onChange={(e) => setEmail(e.target.value)} />
-          </Form.Group>
+  const validateInputs = () => {
+    let isValid = true;
 
-          <Form.Group className="mb-3" controlId="formBasicPassword">
-            <Form.Label>Password</Form.Label>
-            <Form.Control type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
-          </Form.Group>
-          <Button variant="primary" type="submit">
+    const name = document.getElementById('name');
+    const email = document.getElementById('email');
+    const password = document.getElementById('password');
+
+    if (!name.value) {
+      setNameError(true);
+      setNameErrorMessage('Please enter your name.');
+      isValid = false;
+    } else {
+      setNameError(false);
+      setNameErrorMessage('');
+    }
+
+    if (!email.value || !/\S+@\S+\.\S+/.test(email.value)) {
+      setEmailError(true);
+      setEmailErrorMessage('Please enter a valid email address.');
+      isValid = false;
+    } else {
+      setEmailError(false);
+      setEmailErrorMessage('');
+    }
+
+    if (!password.value || password.value.length < 6) {
+      setPasswordError(true);
+      setPasswordErrorMessage('Password must be at least 6 characters long.');
+      isValid = false;
+    } else {
+      setPasswordError(false);
+      setPasswordErrorMessage('');
+    }
+
+    return isValid;
+  };
+
+  return (
+    <AppTheme {...props}>
+      <CssBaseline enableColorScheme />
+      <RegisterContainer direction="column" justifyContent="space-between">
+        <ColorModeSelect sx={{ position: 'fixed', top: '1rem', right: '1rem' }} />
+        <Card variant="outlined">
+          <Typography
+            component="h1"
+            variant="h4"
+            sx={{ width: '100%', fontSize: 'clamp(2rem, 10vw, 2.15rem)', textAlign: 'center' }}
+          >
             Register
-          </Button>
-        </Form>
-      </Card.Body>
-    </Card>
+          </Typography>
+          {registrationError && (
+            <Typography color="error" align="center">
+              {registrationError}
+            </Typography>
+          )}
+ <Box
+  component="form"
+  onSubmit={handleSubmit} // Correctly handling form submission
+  noValidate
+  sx={{
+    display: 'flex',
+    flexDirection: 'column',
+    width: '100%',
+    gap: 2,
+  }}
+>
+  <FormControl>
+    <FormLabel htmlFor="name">Name</FormLabel>
+    <TextField
+      error={nameError}
+      helperText={nameErrorMessage}
+      id="name"
+      type="text"
+      name="name"
+      placeholder="Your Name"
+      autoComplete="name"
+      autoFocus
+      required
+      fullWidth
+      variant="outlined"
+      color={nameError ? 'error' : 'primary'}
+    />
+  </FormControl>
+  <FormControl>
+    <FormLabel htmlFor="email">Email</FormLabel>
+    <TextField
+      error={emailError}
+      helperText={emailErrorMessage}
+      id="email"
+      type="email"
+      name="email"
+      placeholder="your@email.com"
+      autoComplete="email"
+      required
+      fullWidth
+      variant="outlined"
+      color={emailError ? 'error' : 'primary'}
+    />
+  </FormControl>
+  <FormControl>
+    <FormLabel htmlFor="password">Password</FormLabel>
+    <TextField
+      error={passwordError}
+      helperText={passwordErrorMessage}
+      name="password"
+      placeholder="••••••"
+      type="password"
+      id="password"
+      autoComplete="new-password"
+      required
+      fullWidth
+      variant="outlined"
+      color={passwordError ? 'error' : 'primary'}
+    />
+  </FormControl>
+  <Button
+    type="submit" // This ensures form submission happens properly
+    fullWidth
+    variant="contained"
+  >
+    Register
+  </Button>
+</Box>
+
+          <Divider>Already have an account?</Divider>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Typography sx={{ textAlign: 'center' }}>
+              <Link
+                href="/login"  // or wherever your login route is
+                variant="body2"
+                sx={{ alignSelf: 'center' }}
+              >
+                Login
+              </Link>
+            </Typography>
+          </Box>
+        </Card>
+      </RegisterContainer>
+    </AppTheme>
   );
 }
-
-export default Register;
