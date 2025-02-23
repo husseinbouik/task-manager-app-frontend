@@ -16,7 +16,18 @@ const authService = {
             throw error;
         }
     },
-
+    async getUserInfo(token) {
+        try {
+            const response = await axios.get(`${API_BASE_URL}/userInfo`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            return response;
+        } catch (error) {
+            throw error;
+        }
+    },
     async login(email, password) {
         try {
             const response = await axios.post(`${API_BASE_URL}/login`, {
