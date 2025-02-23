@@ -1,40 +1,116 @@
-import React, { useState } from 'react';
-import { Form, Button } from 'react-bootstrap';
+import React, { useState, useEffect } from 'react';
+import {
+  TextField,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Box,
+  Grid,
+} from '@mui/material';
 
-function TaskForm({ onSubmit }) {
+function TaskForm({ onSubmit, onClose, initialTask }) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [dueDate, setDueDate] = useState('');
+  const [status, setStatus] = useState('pending'); // Default status
+
+  useEffect(() => {
+    if (initialTask) {
+      setTitle(initialTask.title || '');
+      setDescription(initialTask.description || '');
+      setDueDate(initialTask.due_date || '');
+      setStatus(initialTask.status || 'pending');
+    } else {
+      setTitle('');
+      setDescription('');
+      setDueDate('');
+      setStatus('pending');
+    }
+  }, [initialTask]);
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    onSubmit({ title, description, due_date: dueDate });  // Call the onSubmit prop
-    setTitle('');
-    setDescription('');
-    setDueDate('');
+    const taskData = {
+      id: initialTask?.id, // Include ID for updates
+      title,
+      description,
+      due_date: dueDate,
+      status,
+    };
+    onSubmit(taskData);
   };
 
   return (
-    <Form onSubmit={handleSubmit}>
-      <Form.Group className="mb-3">
-        <Form.Label>Title</Form.Label>
-        <Form.Control type="text" placeholder="Enter title" value={title} onChange={(e) => setTitle(e.target.value)} />
-      </Form.Group>
-
-      <Form.Group className="mb-3">
-        <Form.Label>Description</Form.Label>
-        <Form.Control as="textarea" rows={3} placeholder="Enter description" value={description} onChange={(e) => setDescription(e.target.value)} />
-      </Form.Group>
-
-      <Form.Group className="mb-3">
-        <Form.Label>Due Date</Form.Label>
-        <Form.Control type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
-      </Form.Group>
-
-      <Button variant="primary" type="submit">
-        Submit
-      </Button>
-    </Form>
+    <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
+      <Grid container spacing={2}>
+        <Grid item xs={12}>
+          <TextField
+            autoFocus
+            fullWidth
+            label="Title"
+            variant="outlined"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            required
+          />
+        </Grid>
+        <Grid item xs={12}>
+          <TextField
+            fullWidth
+            label="Description"
+            multiline
+            rows={4}
+            variant="outlined"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <TextField
+            fullWidth
+            label="Due Date"
+            type="date"
+            variant="outlined"
+            value={dueDate}
+            onChange={(e) => setDueDate(e.target.value)}
+            InputLabelProps={{
+              shrink: true,
+            }}
+          />
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <FormControl fullWidth variant="outlined">
+            <InputLabel id="status-label">Status</InputLabel>
+            <Select
+              labelId="status-label"
+              id="status"
+              value={status}
+              label="Status"
+              onChange={(e) => setStatus(e.target.value)}
+            >
+              <MenuItem value="pending">Pending</MenuItem>
+              <MenuItem value="completed">Completed</MenuItem>
+            </Select>
+          </FormControl>
+        </Grid>
+        <Grid item xs={12}>
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <Button onClick={onClose} sx={{ mr: 1 }}>
+              Cancel
+            </Button>
+            <Button variant="contained" color="primary" type="submit">
+              {initialTask ? 'Update Task' : 'Add Task'}
+            </Button>
+          </Box>
+        </Grid>
+      </Grid>
+    </Box>
   );
 }
 
