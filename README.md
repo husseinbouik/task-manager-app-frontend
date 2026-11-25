@@ -24,8 +24,8 @@ Make sure you have Node.js and npm installed.
 ### Installation
 1. Clone the repository:
    ```sh
-   git clone https://github.com/your-repo/task-dashboard-frontend.git
-   cd task-dashboard-frontend
+   git clone https://github.com/husseinbouik/task-manager-app-frontend.git
+   cd task-manager-app-frontend
    ```
 2. Install dependencies:
    ```sh
@@ -79,4 +79,5 @@ This project is licensed under the MIT License.
 
 ---
 🚀 **Happy Coding!**
+
 
